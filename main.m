@@ -11,9 +11,11 @@ last_img = importdata([data_dir, data_files(1).name]);
 last_img = last_img.Img;
 
 for i = 1 : n_files
+    
     % load the current file and its data
     f = data_files(i);
     data = importdata([data_dir, f.name]);
+    
     [w, h] = size(data.Img);
     % zs visualises the stereo depth data
 %     zs = data.XYZ(:,:,3);
@@ -24,27 +26,37 @@ for i = 1 : n_files
     % get the 2d mask using the image data
     mask = get_mask(data.Img, last_img);
     
-    if any(any(mask))
-        % grab the 3d position for pixels in the mask
-        xyz = reshape(data.XYZ, [w*h, 3]);
-        % get the linear indices of the ones in the mask
-        xs = xyz(mask, :);
-        
-%         [id_x, id_y] = ind2sub(size(mask), find(mask));
-%         id_z = ones(length(id_x), 1);
-%         xs = data.XYZ(id_x, id_y, :);
-%         disp(size(xs, 2));
-
-        % pass them to the RANSAC algorithm
-        [o, r] = ransac(xs);
+    for i = 750:1200
+       mask(:,i) = 0; 
     end
+    
+    figure(1);
+    imshow([data.Img, mask; (data.Img + mask) ./ 2, mask]);
     
     hold on;
     
-    imshow([data.Img, mask; (data.Img + mask) ./ 2, mask]);
-    plot(o(1), o(2), 'r.', 'MarkerSize', 10);
+    if any(any(mask))
+        % grab the 3d position for pixels in the mask
+        xyz = reshape(data.XYZ, [w*h, 3]);
+        
+        % get the linear indices of the ones in the mask
+        xs = xyz(mask, :);
+        
+        length(mask(mask > 0))
+        
+        % pass them to the RANSAC algorithm
+        [o, r, n_good] = ransac(xs);
+        
+        % plot the detected thing
+        plot(o(1), o(2), 'r.', 'MarkerSize', 10);
+        plot(o(1), o(2), 'ro', 'MarkerSize', r);
+    end
     
-    hold off
+    
+    
+    
+    
+    hold off;
     
     last_img = data.Img;
 end

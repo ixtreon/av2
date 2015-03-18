@@ -8,7 +8,6 @@ function mask = get_mask( img, last_img)
     mask = im2bw(d, thresh);
     %mask = im2bw(d, graythresh(d));
     mask = imopen(mask, strel('disk', open_sz));
-%     mask = imdilate(mask, strel('disk', 70));
-%     mask = imerode(mask, strel('disk', 75));
+    mask = imclose(mask, strel('disk', 20));
 end
 
