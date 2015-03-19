@@ -3,38 +3,31 @@ function [ o, r, good_pts ] = ransac( xs )
 %   Detailed explanation goes here
     n_pts = length(xs);
     n_trials = 50;
-    n_picks = 10;
+    n_picks = 5;
     n_good_req = 0.9;
     match_dist = 0.02;
     
     o = [1 1];
     r = 1;
     
-    'start ransac'
     % alg from the ransac slides
     for i = 1 : n_trials
         T = random_pick(xs, n_picks);
         [center, rad] = fit_model(T);
         
-        
         good_pts = get_matching(xs, center, rad, match_dist);
         n_good = length(good_pts);
-        if n_good / n_good_req > n_pts && (rad < 0.15 && rad > 0.01)
+        if n_good / n_good_req > n_pts
             o = center;
             r = rad;
             return;
         end
     end
-    'end ransac'
 end
 
 % picks n random points from xs without repetition. 
 function pts = random_pick(xs, n)
     pts = datasample(xs, n, 'Replace', true);
-end
-
-function d = dist(x, y)
-    d = sqrt(sum((x-y) .^ 2));
 end
 
 % Fits a sphere to the given sample of points. 

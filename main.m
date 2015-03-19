@@ -11,7 +11,7 @@ last_img = importdata([data_dir, data_files(1).name]);
 last_img = last_img.Img;
 
 % sphere tracking
-sphere_pos = zeros([n_files, 1]);
+sphere_pos = zeros([n_files, 3]);
 
 for i = 1 : n_files
     
@@ -29,10 +29,6 @@ for i = 1 : n_files
     % get the 2d mask using the image data
     mask = get_mask(data.Img, last_img);
     
-    for i = 750:1200
-       mask(:,i) = 0; 
-    end
-    
     intensity_img = (sqrt(sum(data.XYZ.^2, 3)) - 0.8);
     
     figure(1);
@@ -47,7 +43,6 @@ for i = 1 : n_files
         % get the linear indices of the ones in the mask
         xs = xyz(mask, :);
         
-        length(mask(mask > 0))
         
         % pass them to the RANSAC algorithm
         [o, r, n_good] = ransac(xs);
@@ -55,12 +50,20 @@ for i = 1 : n_files
         
         % convert the 2d to 3d
         sphere_center = to_2d(o);
-        sphere_rad = r * 2000;
+        sphere_pos(i,:) = o;
         
+        o2 = project_3d(o, r);
+        sphere_rad = sqrt(sum((to_2d(o2) - sphere_center) .^ 2));
         
-        % plot the detected thing
+        % show the sphere radius
+        xyz_center = bsxfun(@minus, xyz, o);
+        xyz_dist = sqrt(sum(xyz_center.^2,2));
+        
+        % plot the detected sphere
         plot(sphere_center(1), sphere_center(2), 'r.', 'MarkerSize', 10);
-        plot(sphere_center(1), sphere_center(2), 'ro', 'MarkerSize', sphere_rad);
+        plot(sphere_center(1), sphere_center(2), 'ro', 'MarkerSize', sphere_rad / 2);
+        
+        G = grav(sphere_pos(:, 3), i)
     end
     
     %waitforbuttonpress();
