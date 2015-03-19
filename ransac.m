@@ -4,10 +4,10 @@ function [ o, r, good_pts ] = ransac( xs )
     n_pts = length(xs);
     n_trials = 50;
     n_picks = 5;
-    n_good_req = 0.9;
-    match_dist = 0.02;
+    n_good_req = 0.8;
+    match_dist = 0.003;
     
-    o = [1 1];
+    o = [1 1 1];
     r = 1;
     
     % alg from the ransac slides

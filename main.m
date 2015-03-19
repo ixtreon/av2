@@ -12,6 +12,8 @@ last_img = last_img.Img;
 
 % sphere tracking
 sphere_pos = zeros([n_files, 3]);
+sphere_vel = zeros([n_files, 3]);
+est_g = zeros([n_files, 1]);
 
 for i = 1 : n_files
     
@@ -20,11 +22,6 @@ for i = 1 : n_files
     data = importdata([data_dir, f.name]);
     
     [w, h] = size(data.Img);
-    % zs visualises the stereo depth data
-%     zs = data.XYZ(:,:,3);
-%     min_z = 1.0;
-%     max_z = 1.5;
-%     zs = (zs - min_z) ./ (max_z - min_z);
     
     % get the 2d mask using the image data
     mask = get_mask(data.Img, last_img);
@@ -43,19 +40,18 @@ for i = 1 : n_files
         % get the linear indices of the ones in the mask
         xs = xyz(mask, :);
         
-        
         % pass them to the RANSAC algorithm
         [o, r, n_good] = ransac(xs);
         
-        
-        % convert the 2d to 3d
+        % convert center from 2d to 3d
         sphere_center = to_2d(o);
         sphere_pos(i,:) = o;
         
-        o2 = project_3d(o, r);
-        sphere_rad = sqrt(sum((to_2d(o2) - sphere_center) .^ 2));
+        % calculate the sphere radius
+        sphere_rad = r / 0.14 * 600;
         
-        % show the sphere radius
+        % try 2 show it in another way
+        % (unfinished)
         xyz_center = bsxfun(@minus, xyz, o);
         xyz_dist = sqrt(sum(xyz_center.^2,2));
         
@@ -63,7 +59,7 @@ for i = 1 : n_files
         plot(sphere_center(1), sphere_center(2), 'r.', 'MarkerSize', 10);
         plot(sphere_center(1), sphere_center(2), 'ro', 'MarkerSize', sphere_rad / 2);
         
-        G = grav(sphere_pos(:, 3), i)
+        est_g(i) = grav(sphere_pos(:, 3), i)
     end
     
     %waitforbuttonpress();
@@ -74,3 +70,4 @@ for i = 1 : n_files
     
     last_img = data.Img;
 end
+mean_g = mean(est_g)

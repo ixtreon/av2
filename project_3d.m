@@ -4,14 +4,21 @@ function [ final_X ] = project_3d( X, r )
 %   X is a [1x3] point. 
     d = norm(X);
     
-    a = acos(1 - (r*r) / (2*d*d));
     
     angXY = atan2(X(2), X(1));
     angXZ = atan2(X(3), X(1));
     
-    xy = sign(X(1)) * [1, tan(angXY)];
+    r2 = r * sin(angXY);
     
-    out_X = sign(X(1)) * [1, tan(angXY), tan(angXZ + a)];
+    a = acos(1 - (r2*r2) / (2*d*d));
+    
+    out_X = [1, tan(angXY), 0];
+    n = norm(out_X);
+    out_X = out_X / n;
+    out_X(3) = tan(angXZ + a);
+    
+    
+    % out_X = sign(X(1)) * [1, tan(angXY), tan(angXZ + a)];
     
     final_X = out_X ./ norm(out_X) .* d;
     
