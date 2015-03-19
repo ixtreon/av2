@@ -2,9 +2,9 @@ function [ o, r, good_pts ] = ransac( xs )
 %RANSAC Performs the RANSAC algorithm for the list of points xs. 
 %   Detailed explanation goes here
     n_pts = length(xs);
-    n_trials = 100;
-    n_picks = 4;
-    n_good_req = 0.8;
+    n_trials = 50;
+    n_picks = 10;
+    n_good_req = 0.9;
     match_dist = 0.02;
     
     o = [1 1];
@@ -19,23 +19,13 @@ function [ o, r, good_pts ] = ransac( xs )
         
         good_pts = get_matching(xs, center, rad, match_dist);
         n_good = length(good_pts);
-        if n_good / n_good_req > n_pts
-            o = to_2d(center);
-            r = 2000 * rad;
+        if n_good / n_good_req > n_pts && (rad < 0.15 && rad > 0.01)
+            o = center;
+            r = rad;
             return;
         end
     end
     'end ransac'
-end
-
-  
-function x_final = to_2d(x)
-    K = [4597.95 0      672.846
-          0      4603.2  362.875
-          0      0      1];
-    x2d = x*K';
-    x2d = x2d / x2d(3);
-    x_final = x2d(1:2);
 end
 
 % picks n random points from xs without repetition. 
@@ -68,6 +58,7 @@ function [o, r] = fit_model(X)
         0, ...
         mean(X(:,3).*(X(:,3)-mean(X(:,3))))];
     A=A+A.';
+    
     B=[mean((X(:,1).^2+X(:,2).^2+X(:,3).^2).*(X(:,1)-mean(X(:,1))));...
         mean((X(:,1).^2+X(:,2).^2+X(:,3).^2).*(X(:,2)-mean(X(:,2))));...
         mean((X(:,1).^2+X(:,2).^2+X(:,3).^2).*(X(:,3)-mean(X(:,3))))];

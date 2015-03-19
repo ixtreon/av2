@@ -5,10 +5,13 @@ data_dir = 'dataset/';
 data_files = dir([data_dir, '*.mat']);
 n_files = size(data_files, 1);
 
-% init the drawing
+% start drawing
 figure(1);
 last_img = importdata([data_dir, data_files(1).name]);
 last_img = last_img.Img;
+
+% sphere tracking
+sphere_pos = zeros([n_files, 1]);
 
 for i = 1 : n_files
     
@@ -30,8 +33,10 @@ for i = 1 : n_files
        mask(:,i) = 0; 
     end
     
+    intensity_img = (sqrt(sum(data.XYZ.^2, 3)) - 0.8);
+    
     figure(1);
-    imshow([data.Img, mask; (data.Img + mask) ./ 2, mask]);
+    imshow([data.Img, intensity_img; (data.Img + mask) ./ 2, mask]);
     
     hold on;
     
@@ -47,12 +52,18 @@ for i = 1 : n_files
         % pass them to the RANSAC algorithm
         [o, r, n_good] = ransac(xs);
         
+        
+        % convert the 2d to 3d
+        sphere_center = to_2d(o);
+        sphere_rad = r * 2000;
+        
+        
         % plot the detected thing
-        plot(o(1), o(2), 'r.', 'MarkerSize', 10);
-        plot(o(1), o(2), 'ro', 'MarkerSize', r);
+        plot(sphere_center(1), sphere_center(2), 'r.', 'MarkerSize', 10);
+        plot(sphere_center(1), sphere_center(2), 'ro', 'MarkerSize', sphere_rad);
     end
     
-    
+    %waitforbuttonpress();
     
     
     
